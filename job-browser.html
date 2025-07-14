@@ -596,6 +596,55 @@
             display: block;
         }
         
+        /* User Dashboard */
+        .user-dashboard {
+            display: none;
+            padding: 150px 0 100px;
+            min-height: 100vh;
+        }
+        
+        .user-dashboard.active {
+            display: block;
+        }
+        
+        .user-info {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(100, 200, 255, 0.2);
+        }
+        
+        .resume-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(100, 200, 255, 0.2);
+        }
+        
+        .resume-section h3 {
+            color: #64c8ff;
+            margin-bottom: 1rem;
+        }
+        
+        .search-results {
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        
+        .search-result-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(100, 200, 255, 0.1);
+        }
+        
         /* Features section and other sections - keeping from original */
         .features {
             padding: 100px 0;
@@ -868,14 +917,18 @@
                 <a href="#faq">FAQ</a>
                 <a href="#contact">Contact</a>
             </div>
-            <div class="cta-buttons">
+            <div class="cta-buttons" id="authButtons">
                 <button class="btn btn-secondary" onclick="showLogin()">Login</button>
                 <button class="btn btn-primary" onclick="showRegistration()">Get Started</button>
+            </div>
+            <div class="cta-buttons" id="userButtons" style="display: none;">
+                <span id="userEmailDisplay" style="color: #64c8ff; margin-right: 1rem;"></span>
+                <button class="btn btn-secondary" onclick="logoutUser()">Logout</button>
             </div>
         </nav>
     </header>
     
-    <section class="hero">
+    <section class="hero" id="heroSection">
         <div class="container">
             <span class="hero-badge">🎯 AI Agentic Browser</span>
             <h1>The World's First <span class="gradient-text">Agentic Browser</span><br>for Job Applications</h1>
@@ -900,6 +953,52 @@
                     <a href="#download" style="display: inline-block; background: linear-gradient(135deg, #64c8ff 0%, #a78bfa 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 50px; font-size: 1rem; font-weight: bold; transition: all 0.3s ease;" onclick="showRegistration()">
                         💎 Download Premium
                     </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- User Dashboard -->
+    <section class="user-dashboard" id="userDashboard">
+        <div class="container">
+            <div class="user-info">
+                <h2 style="color: #64c8ff; margin-bottom: 1rem;">Welcome to Job-Browser.AI!</h2>
+                <p><strong>Email:</strong> <span id="userEmail"></span></p>
+                <p><strong>User ID:</strong> <span id="userId"></span></p>
+                <p style="margin-top: 1rem; color: #94a3b8;">Your AI-powered job search assistant is ready to help you find and apply to jobs automatically.</p>
+            </div>
+
+            <div class="resume-section">
+                <h3>Upload Your Resume</h3>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">Upload your resume to create your personalized job search profile. Our AI will extract key information and match you with relevant opportunities.</p>
+                <div class="file-upload">
+                    <input type="file" id="resumeFile" accept=".pdf,.doc,.docx,.txt">
+                    <label for="resumeFile" class="file-upload-label" id="resumeUploadLabel">
+                        <span style="font-size: 2rem;">📄</span>
+                        <span>Click to upload your resume or drag and drop</span>
+                    </label>
+                </div>
+                <button class="btn btn-primary" onclick="uploadResume()" style="margin-top: 1rem;">
+                    Upload & Process Resume
+                </button>
+                <div id="uploadStatus" style="margin-top: 1rem;"></div>
+            </div>
+
+            <div class="resume-section">
+                <h3>Search Jobs</h3>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">Search through job opportunities that match your profile and preferences.</p>
+                <div class="form-group">
+                    <input type="text" id="jobSearchQuery" placeholder="Enter job title, skills, or company name..." style="margin-bottom: 1rem;">
+                    <button class="btn btn-primary" onclick="searchJobs()">Search Jobs</button>
+                </div>
+                <div id="searchResults" class="search-results" style="display: none;"></div>
+            </div>
+
+            <div class="resume-section">
+                <h3>Application History</h3>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">Track your job applications and their status.</p>
+                <div id="applicationHistory">
+                    <p style="color: #94a3b8; font-style: italic;">No applications yet. Start by uploading your resume and searching for jobs!</p>
                 </div>
             </div>
         </div>
@@ -979,31 +1078,8 @@
                 </form>
             </div>
             
-            <!-- Step 2: Resume Upload -->
+            <!-- Step 2: Profile Setup -->
             <div class="form-step" id="step2">
-                <div class="form-header">
-                    <h2 class="form-title">Upload Your Resume</h2>
-                    <p class="form-subtitle">We'll extract your information and create your AI profile</p>
-                </div>
-                
-                <div class="form-group">
-                    <div class="file-upload">
-                        <input type="file" id="resumeUpload" accept=".pdf,.doc,.docx,.txt">
-                        <label for="resumeUpload" class="file-upload-label" id="fileUploadLabel">
-                            <span style="font-size: 2rem;">📄</span>
-                            <span>Click to upload or drag and drop</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="form-navigation">
-                    <button class="btn btn-secondary" onclick="skipResume()">Skip for now</button>
-                    <button class="btn btn-primary" onclick="uploadResume()">Upload & Continue</button>
-                </div>
-            </div>
-            
-            <!-- Step 3: Missing Information -->
-            <div class="form-step" id="step3">
                 <div class="form-header">
                     <h2 class="form-title">Complete Your Profile</h2>
                     <p class="form-subtitle">Help us understand your preferences better</p>
@@ -1040,13 +1116,6 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>Preferred Industries (Press Enter to add)</label>
-                        <div class="tag-input-container" id="industriesContainer">
-                            <input type="text" class="tag-input" id="industryInput" placeholder="e.g., Technology, Finance">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
                         <label for="remotePreference">Remote Work Preference</label>
                         <select id="remotePreference">
                             <option value="">Select preference</option>
@@ -1058,43 +1127,10 @@
                     </div>
                     
                     <div class="form-navigation">
-                        <button type="button" class="btn btn-secondary" onclick="previousStep()">Back</button>
-                        <button type="submit" class="btn btn-primary">Complete Profile</button>
+                        <button type="button" class="btn btn-secondary" onclick="skipProfile()">Skip for now</button>
+                        <button type="submit" class="btn btn-primary">Complete Setup</button>
                     </div>
                 </form>
-            </div>
-            
-            <!-- Step 4: Sample Jobs -->
-            <div class="form-step" id="step4">
-                <div class="form-header">
-                    <h2 class="form-title">Sample Job Preferences</h2>
-                    <p class="form-subtitle">Show us some jobs you're interested in (optional)</p>
-                </div>
-                
-                <div class="form-group">
-                    <label for="sampleJob1">Sample Job URL 1</label>
-                    <input type="url" id="sampleJob1" placeholder="https://linkedin.com/jobs/view/...">
-                </div>
-                
-                <div class="form-group">
-                    <label for="sampleJob2">Sample Job URL 2</label>
-                    <input type="url" id="sampleJob2" placeholder="https://indeed.com/viewjob?jk=...">
-                </div>
-                
-                <div class="form-group">
-                    <label for="sampleJob3">Sample Job URL 3</label>
-                    <input type="url" id="sampleJob3" placeholder="Paste any job listing URL">
-                </div>
-                
-                <div class="form-group">
-                    <label for="additionalNotes">Additional Preferences</label>
-                    <textarea id="additionalNotes" rows="4" placeholder="Tell us anything else that would help us find your perfect job..."></textarea>
-                </div>
-                
-                <div class="form-navigation">
-                    <button class="btn btn-secondary" onclick="skipSampleJobs()">Skip</button>
-                    <button class="btn btn-primary" onclick="completeRegistration()">Finish Setup</button>
-                </div>
             </div>
         </div>
     </div>
@@ -1120,44 +1156,13 @@
                     <input type="password" id="loginPassword" required placeholder="Enter your password">
                 </div>
                 
+                <div class="success-message" id="loginSuccessMessage"></div>
+                <div class="error-message" id="loginErrorMessage"></div>
+                
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Login</button>
             </form>
         </div>
     </div>
-    
-    <!-- Download Section -->
-    <section class="download-section" id="downloadSection">
-        <div class="container">
-            <div class="download-card">
-                <h2 class="form-title">🎉 Registration Complete!</h2>
-                <p class="form-subtitle" style="margin-bottom: 2rem;">Download our desktop app to start applying to jobs automatically</p>
-                
-                <div class="platform-options">
-                    <div class="platform-card" onclick="downloadApp('windows')">
-                        <div class="platform-icon">🪟</div>
-                        <div class="platform-name">Windows</div>
-                        <div class="platform-desc">Windows 10 or later</div>
-                    </div>
-                    
-                    <div class="platform-card" onclick="downloadApp('mac')">
-                        <div class="platform-icon">🍎</div>
-                        <div class="platform-name">macOS</div>
-                        <div class="platform-desc">macOS 10.15 or later</div>
-                    </div>
-                    
-                    <div class="platform-card" onclick="downloadApp('linux')">
-                        <div class="platform-icon">🐧</div>
-                        <div class="platform-name">Linux</div>
-                        <div class="platform-desc">Ubuntu, Debian, Fedora</div>
-                    </div>
-                </div>
-                
-                <p style="color: #94a3b8; margin-top: 2rem;">
-                    The app will automatically install Chrome if not present and guide you through connecting your LinkedIn account.
-                </p>
-            </div>
-        </div>
-    </section>
     
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -1167,15 +1172,30 @@
         </div>
     </div>
     
+    <!-- Firebase SDK - Use CDN for static HTML -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
     <script>
-        const API_URL = 'http://localhost:3001/api';
+        // Firebase configuration - Your actual config
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_Anft1_Da8RRrn3Ng-iRcDWRSIMVpFMY",
+            authDomain: "authentication-5c34a.firebaseapp.com",
+            projectId: "authentication-5c34a",
+            storageBucket: "authentication-5c34a.firebasestorage.app",
+            messagingSenderId: "355170563230",
+            appId: "1:355170563230:web:590530a8b8a8cb43c1770f",
+            measurementId: "G-CNFJG6PW53"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Global variables
+        let currentUser = null;
         let currentStep = 1;
-        let authToken = null;
-        let userProfile = {};
-        
-        // Tags data
         const jobTitles = [];
-        const industries = [];
         
         // Create floating particles
         const particlesContainer = document.getElementById('particles');
@@ -1187,124 +1207,143 @@
             particle.style.animationDuration = (20 + Math.random() * 10) + 's';
             particlesContainer.appendChild(particle);
         }
-        
-        // Show/Hide Modals
-        function showRegistration() {
-            document.getElementById('registrationModal').classList.add('active');
-        }
-        
-        function showLogin() {
-            document.getElementById('loginModal').classList.add('active');
-        }
-        
-        function closeModal() {
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.classList.remove('active');
-            });
-        }
-        
-        // Registration Form
-        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+
+        // Auth state observer
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                showUserDashboard();
+                document.getElementById('userEmail').textContent = user.email;
+                document.getElementById('userId').textContent = user.uid;
+                document.getElementById('userEmailDisplay').textContent = user.email;
+                
+                // Show user buttons, hide auth buttons
+                document.getElementById('authButtons').style.display = 'none';
+                document.getElementById('userButtons').style.display = 'flex';
+            } else {
+                currentUser = null;
+                showHeroSection();
+                
+                // Show auth buttons, hide user buttons
+                document.getElementById('authButtons').style.display = 'flex';
+                document.getElementById('userButtons').style.display = 'none';
+            }
+        });
+
+        // Authentication functions
+        function loginUser() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
             
+            if (!email || !password) {
+                showLoginError('Please fill in all fields');
+                return;
+            }
+
+            showLoading('Logging in...');
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    hideLoading();
+                    showLoginSuccess('Login successful!');
+                    setTimeout(() => {
+                        closeModal();
+                    }, 1000);
+                })
+                .catch((error) => {
+                    hideLoading();
+                    showLoginError(getErrorMessage(error.code));
+                });
+        }
+
+        function signupUser() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            
+
+            if (!email || !password || !confirmPassword) {
+                showError('Please fill in all fields');
+                return;
+            }
+
             if (password !== confirmPassword) {
                 showError('Passwords do not match');
                 return;
             }
-            
-            if (password.length < 8) {
-                showError('Password must be at least 8 characters long');
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters long');
                 return;
             }
-            
+
             showLoading('Creating your account...');
-            
-            try {
-                // Simulate API call - replace with actual API
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                authToken = 'fake-token';
-                userProfile = { email };
-                hideLoading();
-                showSuccess('Account created successfully!');
-                nextStep();
-            } catch (error) {
-                hideLoading();
-                showError('Registration failed. Please try again.');
-            }
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    hideLoading();
+                    showSuccess('Account created successfully!');
+                    nextStep();
+                })
+                .catch((error) => {
+                    hideLoading();
+                    showError(getErrorMessage(error.code));
+                });
+        }
+
+        function logoutUser() {
+            auth.signOut().then(() => {
+                showSuccess('Logged out successfully!');
+            }).catch((error) => {
+                showError('Error signing out: ' + error.message);
+            });
+        }
+
+        // UI functions
+        function showHeroSection() {
+            document.getElementById('heroSection').style.display = 'block';
+            document.getElementById('userDashboard').classList.remove('active');
+            document.querySelector('.features').style.display = 'block';
+        }
+
+        function showUserDashboard() {
+            document.getElementById('heroSection').style.display = 'none';
+            document.getElementById('userDashboard').classList.add('active');
+            document.querySelector('.features').style.display = 'none';
+        }
+
+        function showRegistration() {
+            document.getElementById('registrationModal').classList.add('active');
+        }
+
+        function showLogin() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+            // Reset forms
+            document.getElementById('registrationForm').reset();
+            document.getElementById('loginForm').reset();
+            currentStep = 1;
+            updateProgress();
+            document.querySelectorAll('.form-step').forEach(step => step.classList.remove('active'));
+            document.getElementById('step1').classList.add('active');
+        }
+
+        // Registration Form
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            signupUser();
         });
-        
+
         // Login Form
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            showLoading('Logging in...');
-            
-            try {
-                // Simulate API call - replace with actual API
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                authToken = 'fake-token';
-                userProfile = { email };
-                hideLoading();
-                
-                // Redirect to download section
-                closeModal();
-                document.getElementById('downloadSection').classList.add('active');
-                document.querySelector('.hero').style.display = 'none';
-            } catch (error) {
-                hideLoading();
-                showError('Login failed. Please try again.');
-            }
+            loginUser();
         });
-        
-        // Resume Upload
-        document.getElementById('resumeUpload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const label = document.getElementById('fileUploadLabel');
-                label.innerHTML = `
-                    <span style="font-size: 2rem;">✅</span>
-                    <span>${file.name}</span>
-                `;
-            }
-        });
-        
-        async function uploadResume() {
-            const fileInput = document.getElementById('resumeUpload');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                showError('Please select a resume file');
-                return;
-            }
-            
-            showLoading('Analyzing your resume...');
-            
-            try {
-                // Simulate resume analysis
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                
-                hideLoading();
-                showSuccess('Resume analyzed successfully!');
-                nextStep();
-            } catch (error) {
-                hideLoading();
-                showError('Resume upload failed');
-            }
-        }
-        
-        function skipResume() {
-            nextStep();
-        }
-        
+
         // Profile Form
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1312,17 +1351,20 @@
             showLoading('Updating your profile...');
             
             try {
+                // Here you would normally save profile data to Firestore or your backend
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 
                 hideLoading();
-                showSuccess('Profile updated!');
-                nextStep();
+                showSuccess('Profile updated successfully!');
+                setTimeout(() => {
+                    closeModal();
+                }, 1000);
             } catch (error) {
                 hideLoading();
                 showError('Profile update failed');
             }
         });
-        
+
         // Tag Input Handling
         document.getElementById('jobTitleInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -1335,19 +1377,7 @@
                 }
             }
         });
-        
-        document.getElementById('industryInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const value = this.value.trim();
-                if (value && !industries.includes(value)) {
-                    industries.push(value);
-                    addTag(value, 'industriesContainer', industries);
-                    this.value = '';
-                }
-            }
-        });
-        
+
         function addTag(text, containerId, array) {
             const container = document.getElementById(containerId);
             const input = container.querySelector('.tag-input');
@@ -1356,46 +1386,162 @@
             tag.className = 'tag';
             tag.innerHTML = `
                 ${text}
-                <span class="tag-remove" onclick="removeTag('${text}', '${containerId}', ${array === jobTitles ? 'jobTitles' : 'industries'})">×</span>
+                <span class="tag-remove" onclick="removeTag('${text}', '${containerId}')">×</span>
             `;
             
             container.insertBefore(tag, input);
         }
-        
-        function removeTag(text, containerId, arrayName) {
-            const array = arrayName === 'jobTitles' ? jobTitles : industries;
-            const index = array.indexOf(text);
+
+        function removeTag(text, containerId) {
+            const index = jobTitles.indexOf(text);
             if (index > -1) {
-                array.splice(index, 1);
+                jobTitles.splice(index, 1);
             }
             
             // Rebuild tags
             const container = document.getElementById(containerId);
             container.querySelectorAll('.tag').forEach(tag => tag.remove());
-            array.forEach(item => addTag(item, containerId, array));
+            jobTitles.forEach(item => addTag(item, containerId, jobTitles));
         }
-        
-        // Sample Jobs
-        async function completeRegistration() {
-            showLoading('Finalizing registration...');
+
+        // Resume Upload
+        document.getElementById('resumeFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const label = document.getElementById('resumeUploadLabel');
+                label.innerHTML = `
+                    <span style="font-size: 2rem;">✅</span>
+                    <span>${file.name}</span>
+                `;
+            }
+        });
+
+        async function uploadResume() {
+            if (!currentUser) {
+                showError('Please login first');
+                return;
+            }
+
+            const fileInput = document.getElementById('resumeFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showUploadError('Please select a resume file');
+                return;
+            }
+
+            showLoading('Processing your resume...');
             
             try {
+                // Here you would normally upload to Firebase Storage and process with your backend
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                hideLoading();
+                showUploadSuccess('Resume uploaded and processed successfully!');
+                
+                // Reset file input
+                fileInput.value = '';
+                document.getElementById('resumeUploadLabel').innerHTML = `
+                    <span style="font-size: 2rem;">📄</span>
+                    <span>Click to upload your resume or drag and drop</span>
+                `;
+            } catch (error) {
+                hideLoading();
+                showUploadError('Resume upload failed: ' + error.message);
+            }
+        }
+
+        // Job Search
+        async function searchJobs() {
+            if (!currentUser) {
+                showError('Please login first');
+                return;
+            }
+
+            const query = document.getElementById('jobSearchQuery').value.trim();
+            
+            if (!query) {
+                showError('Please enter a search query');
+                return;
+            }
+
+            showLoading('Searching for jobs...');
+            
+            try {
+                // Simulate job search API call
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 
                 hideLoading();
-                closeModal();
-                document.getElementById('downloadSection').classList.add('active');
-                document.querySelector('.hero').style.display = 'none';
+                
+                // Mock job results
+                const mockJobs = [
+                    {
+                        title: "Senior Software Engineer",
+                        company: "Tech Corp",
+                        location: "San Francisco, CA",
+                        salary: "$120,000 - $180,000",
+                        description: "Looking for an experienced software engineer to join our team..."
+                    },
+                    {
+                        title: "Product Manager",
+                        company: "StartupXYZ",
+                        location: "Remote",
+                        salary: "$90,000 - $130,000",
+                        description: "Seeking a product manager to lead our product development..."
+                    },
+                    {
+                        title: "Data Scientist",
+                        company: "Analytics Inc",
+                        location: "New York, NY",
+                        salary: "$100,000 - $150,000",
+                        description: "Join our data science team to build predictive models..."
+                    }
+                ];
+                
+                displaySearchResults(mockJobs);
             } catch (error) {
                 hideLoading();
-                showError('Registration completion failed');
+                showError('Job search failed: ' + error.message);
             }
         }
-        
-        function skipSampleJobs() {
-            completeRegistration();
+
+        function displaySearchResults(jobs) {
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.style.display = 'block';
+            
+            let html = '<h4 style="color: #64c8ff; margin-bottom: 1rem;">Search Results:</h4>';
+            
+            jobs.forEach((job, index) => {
+                html += `
+                    <div class="search-result-item">
+                        <h5 style="color: #64c8ff; margin-bottom: 0.5rem;">${job.title}</h5>
+                        <p style="color: #94a3b8; margin-bottom: 0.5rem;"><strong>${job.company}</strong> - ${job.location}</p>
+                        <p style="color: #a78bfa; margin-bottom: 0.5rem;">${job.salary}</p>
+                        <p style="color: #e2e8f0; margin-bottom: 1rem;">${job.description}</p>
+                        <button class="btn btn-primary" onclick="applyToJob(${index})" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                            Apply Now
+                        </button>
+                    </div>
+                `;
+            });
+            
+            resultsContainer.innerHTML = html;
         }
-        
+
+        function applyToJob(jobIndex) {
+            if (!currentUser) {
+                showError('Please login first');
+                return;
+            }
+
+            showLoading('Applying to job...');
+            
+            setTimeout(() => {
+                hideLoading();
+                showSuccess('Application submitted successfully!');
+            }, 2000);
+        }
+
         // Navigation
         function nextStep() {
             document.getElementById(`step${currentStep}`).classList.remove('active');
@@ -1403,68 +1549,83 @@
             document.getElementById(`step${currentStep}`).classList.add('active');
             updateProgress();
         }
-        
-        function previousStep() {
-            document.getElementById(`step${currentStep}`).classList.remove('active');
-            currentStep--;
-            document.getElementById(`step${currentStep}`).classList.add('active');
-            updateProgress();
+
+        function skipProfile() {
+            closeModal();
         }
-        
+
         function updateProgress() {
-            const progress = (currentStep / 4) * 100;
+            const progress = (currentStep / 2) * 100;
             document.getElementById('progressBar').style.width = progress + '%';
         }
-        
-        // Download App
-        function downloadApp(platform) {
-            showLoading('Preparing download...');
-            
-            // Map platform to download URL
-            const downloadUrls = {
-                'windows': '/downloads/job-browser-setup.exe',
-                'mac': '/downloads/job-browser.dmg',
-                'linux': '/downloads/job-browser.AppImage'
-            };
-            
-            setTimeout(() => {
-                hideLoading();
-                // Simulate download
-                const link = document.createElement('a');
-                link.href = downloadUrls[platform];
-                link.download = `job-browser-${platform}`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                showSuccess(`Download started for ${platform}!`);
-            }, 1000);
-        }
-        
+
         // Utility Functions
         function showLoading(text = 'Processing...') {
             document.getElementById('loadingText').textContent = text;
             document.getElementById('loadingOverlay').classList.add('active');
         }
-        
+
         function hideLoading() {
             document.getElementById('loadingOverlay').classList.remove('active');
         }
-        
+
         function showSuccess(message) {
             const successEl = document.getElementById('successMessage');
             successEl.textContent = message;
             successEl.classList.add('active');
             setTimeout(() => successEl.classList.remove('active'), 5000);
         }
-        
+
         function showError(message) {
             const errorEl = document.getElementById('errorMessage');
             errorEl.textContent = message;
             errorEl.classList.add('active');
             setTimeout(() => errorEl.classList.remove('active'), 5000);
         }
-        
+
+        function showLoginSuccess(message) {
+            const successEl = document.getElementById('loginSuccessMessage');
+            successEl.textContent = message;
+            successEl.classList.add('active');
+            setTimeout(() => successEl.classList.remove('active'), 3000);
+        }
+
+        function showLoginError(message) {
+            const errorEl = document.getElementById('loginErrorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('active');
+            setTimeout(() => errorEl.classList.remove('active'), 5000);
+        }
+
+        function showUploadSuccess(message) {
+            const statusEl = document.getElementById('uploadStatus');
+            statusEl.innerHTML = `<div style="color: #6bcf7f; padding: 1rem; background: rgba(107, 207, 127, 0.1); border-radius: 10px; border: 1px solid rgba(107, 207, 127, 0.3);">${message}</div>`;
+        }
+
+        function showUploadError(message) {
+            const statusEl = document.getElementById('uploadStatus');
+            statusEl.innerHTML = `<div style="color: #ff6b6b; padding: 1rem; background: rgba(255, 107, 107, 0.1); border-radius: 10px; border: 1px solid rgba(255, 107, 107, 0.3);">${message}</div>`;
+        }
+
+        function getErrorMessage(errorCode) {
+            switch (errorCode) {
+                case 'auth/email-already-in-use':
+                    return 'This email is already registered. Please use a different email or try logging in.';
+                case 'auth/invalid-email':
+                    return 'Please enter a valid email address.';
+                case 'auth/weak-password':
+                    return 'Password should be at least 6 characters long.';
+                case 'auth/user-not-found':
+                    return 'No account found with this email address.';
+                case 'auth/wrong-password':
+                    return 'Incorrect password. Please try again.';
+                case 'auth/too-many-requests':
+                    return 'Too many failed attempts. Please try again later.';
+                default:
+                    return 'An error occurred. Please try again.';
+            }
+        }
+
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -1475,23 +1636,14 @@
                 }
             });
         });
-        
+
         // Support button animation
         document.querySelector('.support-link').addEventListener('mouseenter', function() {
             this.style.transform = 'translateY(-2px) scale(1.05)';
         });
-        
+
         document.querySelector('.support-link').addEventListener('mouseleave', function() {
             this.style.transform = 'translateY(0) scale(1)';
-        });
-        
-        // Check for existing auth token
-        window.addEventListener('load', () => {
-            const token = localStorage.getItem('authToken');
-            if (token) {
-                authToken = token;
-                // Optionally auto-login or show dashboard
-            }
         });
     </script>
 </body>
