@@ -1189,8 +1189,14 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            alert('Firebase initialization failed. Please check your configuration.');
+        }
 
         // Global variables
         let currentUser = null;
@@ -1209,25 +1215,36 @@
         }
 
         // Auth state observer
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                currentUser = user;
-                showUserDashboard();
-                document.getElementById('userEmail').textContent = user.email;
-                document.getElementById('userId').textContent = user.uid;
-                document.getElementById('userEmailDisplay').textContent = user.email;
-                
-                // Show user buttons, hide auth buttons
-                document.getElementById('authButtons').style.display = 'none';
-                document.getElementById('userButtons').style.display = 'flex';
-            } else {
-                currentUser = null;
-                showHeroSection();
-                
-                // Show auth buttons, hide user buttons
-                document.getElementById('authButtons').style.display = 'flex';
-                document.getElementById('userButtons').style.display = 'none';
-            }
+        let auth;
+        try {
+            auth = firebase.auth();
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    showUserDashboard();
+                    document.getElementById('userEmail').textContent = user.email;
+                    document.getElementById('userId').textContent = user.uid;
+                    document.getElementById('userEmailDisplay').textContent = user.email;
+                    
+                    // Show user buttons, hide auth buttons
+                    document.getElementById('authButtons').style.display = 'none';
+                    document.getElementById('userButtons').style.display = 'flex';
+                } else {
+                    currentUser = null;
+                    showHeroSection();
+                    
+                    // Show auth buttons, hide user buttons
+                    document.getElementById('authButtons').style.display = 'flex';
+                    document.getElementById('userButtons').style.display = 'none';
+                }
+            });
+        } catch (error) {
+            console.error('Auth state observer error:', error);
+        }
+
+        // Test Firebase connection
+        window.addEventListener('load', () => {
+            console.log('Page loaded, Firebase auth:', typeof firebase.auth);
         });
 
         // Authentication functions
@@ -1286,7 +1303,8 @@
                 })
                 .catch((error) => {
                     hideLoading();
-                    showError(getErrorMessage(error.code));
+                    console.error('Firebase Auth Error:', error);
+                    showError(`Error: ${error.message || 'An error occurred. Please try again.'}`);
                 });
         }
 
