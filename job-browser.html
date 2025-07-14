@@ -1191,8 +1191,9 @@
         // Initialize Firebase
         try {
             firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
             console.log('Firebase initialized successfully');
+            console.log('Project ID:', firebaseConfig.projectId);
+            console.log('Auth Domain:', firebaseConfig.authDomain);
         } catch (error) {
             console.error('Firebase initialization error:', error);
             alert('Firebase initialization failed. Please check your configuration.');
@@ -1278,6 +1279,8 @@
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
+            console.log('Attempting signup with:', { email, passwordLength: password.length });
+
             if (!email || !password || !confirmPassword) {
                 showError('Please fill in all fields');
                 return;
@@ -1297,14 +1300,42 @@
 
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
+                    console.log('User created successfully:', userCredential.user);
                     hideLoading();
                     showSuccess('Account created successfully!');
                     nextStep();
                 })
                 .catch((error) => {
+                    console.error('Firebase Auth Error Details:', {
+                        code: error.code,
+                        message: error.message,
+                        details: error
+                    });
                     hideLoading();
-                    console.error('Firebase Auth Error:', error);
-                    showError(`Error: ${error.message || 'An error occurred. Please try again.'}`);
+                    
+                    // Show specific error messages
+                    let errorMessage = 'Registration failed. ';
+                    switch(error.code) {
+                        case 'auth/email-already-in-use':
+                            errorMessage += 'This email is already registered.';
+                            break;
+                        case 'auth/invalid-email':
+                            errorMessage += 'Please enter a valid email address.';
+                            break;
+                        case 'auth/weak-password':
+                            errorMessage += 'Password is too weak.';
+                            break;
+                        case 'auth/operation-not-allowed':
+                            errorMessage += 'Email/password authentication is not enabled.';
+                            break;
+                        case 'auth/api-key-not-valid':
+                            errorMessage += 'Invalid API key configuration.';
+                            break;
+                        default:
+                            errorMessage += `Error: ${error.message}`;
+                    }
+                    
+                    showError(errorMessage);
                 });
         }
 
