@@ -1177,9 +1177,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
     <script>
-        // Firebase configuration - Using environment variables or separate config file
+        // Firebase configuration - Updated with new API key
         const firebaseConfig = {
-            apiKey: window.FIREBASE_API_KEY || "AIzaSyB_Anft1_Da8RRrn3Ng-iRcDWRSIMVpFMY",
+            apiKey: "AIzaSyB_Anft1_Da8KRrn3NQ-iRcDWRSIMVpFMY",
             authDomain: "authentication-5c34a.firebaseapp.com",
             projectId: "authentication-5c34a",
             storageBucket: "authentication-5c34a.firebasestorage.app",
@@ -1243,9 +1243,34 @@
             console.error('Auth state observer error:', error);
         }
 
-        // Test Firebase connection
+        // Test Firebase connection and project validity
         window.addEventListener('load', () => {
-            console.log('Page loaded, Firebase auth:', typeof firebase.auth);
+            console.log('Page loaded, testing Firebase connection...');
+            console.log('Firebase config:', firebaseConfig);
+            
+            // Test if we can connect to Firebase
+            fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseConfig.apiKey}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                console.log('Firebase API test response status:', response.status);
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Firebase API test error:', text);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Firebase API test successful:', data);
+            })
+            .catch(error => {
+                console.error('Firebase API test failed:', error);
+            });
         });
 
         // Authentication functions
