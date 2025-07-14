@@ -1177,9 +1177,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
     <script>
-        // Firebase configuration - Your actual config
+        // Firebase configuration - Using environment variables or separate config file
         const firebaseConfig = {
-            apiKey: "AIzaSyB_Anft1_Da8RRrn3Ng-iRcDWRSIMVpFMY",
+            apiKey: window.FIREBASE_API_KEY || "AIzaSyB_Anft1_Da8RRrn3Ng-iRcDWRSIMVpFMY",
             authDomain: "authentication-5c34a.firebaseapp.com",
             projectId: "authentication-5c34a",
             storageBucket: "authentication-5c34a.firebasestorage.app",
