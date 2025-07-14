@@ -643,6 +643,100 @@
             margin-bottom: 1rem;
             border-radius: 10px;
             border: 1px solid rgba(100, 200, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .search-result-item:hover {
+            border-color: rgba(100, 200, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .file-upload-progress {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        
+        .file-upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #64c8ff 0%, #a78bfa 100%);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        
+        .resume-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(100, 200, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .resume-item:hover {
+            border-color: rgba(100, 200, 255, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .question-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(167, 139, 250, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .answer-box {
+            background: rgba(100, 200, 255, 0.05);
+            border-left: 3px solid #64c8ff;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .match-score {
+            background: linear-gradient(135deg, #64c8ff 0%, #a78bfa 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-badge.success {
+            background: rgba(107, 207, 127, 0.2);
+            color: #6bcf7f;
+            border: 1px solid rgba(107, 207, 127, 0.3);
+        }
+        
+        .status-badge.warning {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        
+        .btn-small {
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
         }
         
         /* Features section and other sections - keeping from original */
@@ -971,17 +1065,45 @@
             <div class="resume-section">
                 <h3>Upload Your Resume</h3>
                 <p style="color: #94a3b8; margin-bottom: 1rem;">Upload your resume to create your personalized job search profile. Our AI will extract key information and match you with relevant opportunities.</p>
+                
+                <!-- Resume Upload Area -->
                 <div class="file-upload">
-                    <input type="file" id="resumeFile" accept=".pdf,.doc,.docx,.txt">
+                    <input type="file" id="resumeFile" accept=".pdf,.doc,.docx,.txt" multiple>
                     <label for="resumeFile" class="file-upload-label" id="resumeUploadLabel">
                         <span style="font-size: 2rem;">📄</span>
-                        <span>Click to upload your resume or drag and drop</span>
+                        <span>Click to upload your resume(s) or drag and drop</span>
+                        <small style="display: block; margin-top: 0.5rem; color: #94a3b8;">Supports PDF, DOC, DOCX, TXT files</small>
                     </label>
                 </div>
+                
                 <button class="btn btn-primary" onclick="uploadResume()" style="margin-top: 1rem;">
-                    Upload & Process Resume
+                    <span id="uploadButtonText">Upload & Process Resume</span>
+                    <div id="uploadLoader" class="loader" style="display: none; margin-left: 10px;"></div>
                 </button>
+                
                 <div id="uploadStatus" style="margin-top: 1rem;"></div>
+                
+                <!-- Uploaded Resumes List -->
+                <div id="resumesList" style="margin-top: 2rem; display: none;">
+                    <h4 style="color: #64c8ff; margin-bottom: 1rem;">Your Uploaded Resumes</h4>
+                    <div id="resumesContainer"></div>
+                </div>
+            </div>
+
+            <div class="resume-section">
+                <h3>Ask Questions About Your Resume</h3>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">Ask questions about your resume content and get AI-powered answers.</p>
+                
+                <div class="form-group">
+                    <input type="text" id="questionInput" placeholder="Ask something about your resume..." style="margin-bottom: 1rem;">
+                    <button class="btn btn-primary" onclick="askQuestion()">Ask Question</button>
+                </div>
+                
+                <!-- Questions History -->
+                <div id="questionsHistory" style="margin-top: 2rem; display: none;">
+                    <h4 style="color: #64c8ff; margin-bottom: 1rem;">Questions & Answers</h4>
+                    <div id="questionsContainer"></div>
+                </div>
             </div>
 
             <div class="resume-section">
@@ -1175,6 +1297,8 @@
     <!-- Firebase SDK - Use CDN for static HTML -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     
     <script>
         // Firebase configuration - Updated with new API key
@@ -1198,6 +1322,11 @@
             console.error('Firebase initialization error:', error);
             alert('Firebase initialization failed. Please check your configuration.');
         }
+
+        // Initialize Firebase services
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
 
         // Global variables
         let currentUser = null;
@@ -1478,54 +1607,462 @@
             jobTitles.forEach(item => addTag(item, containerId, jobTitles));
         }
 
-        // Resume Upload
+        // Resume Upload Functions
         document.getElementById('resumeFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
+            const files = e.target.files;
+            if (files.length > 0) {
                 const label = document.getElementById('resumeUploadLabel');
-                label.innerHTML = `
-                    <span style="font-size: 2rem;">✅</span>
-                    <span>${file.name}</span>
-                `;
+                if (files.length === 1) {
+                    label.innerHTML = `
+                        <span style="font-size: 2rem;">✅</span>
+                        <span>${files[0].name}</span>
+                        <small style="display: block; margin-top: 0.5rem; color: #94a3b8;">Ready to upload</small>
+                    `;
+                } else {
+                    label.innerHTML = `
+                        <span style="font-size: 2rem;">✅</span>
+                        <span>${files.length} files selected</span>
+                        <small style="display: block; margin-top: 0.5rem; color: #94a3b8;">Ready to upload</small>
+                    `;
+                }
             }
         });
 
         async function uploadResume() {
             if (!currentUser) {
-                showError('Please login first');
+                showUploadError('Please login first');
                 return;
             }
 
             const fileInput = document.getElementById('resumeFile');
-            const file = fileInput.files[0];
+            const files = fileInput.files;
             
-            if (!file) {
-                showUploadError('Please select a resume file');
+            if (files.length === 0) {
+                showUploadError('Please select at least one resume file');
                 return;
             }
 
-            showLoading('Processing your resume...');
+            const uploadButton = document.getElementById('uploadButtonText');
+            const uploadLoader = document.getElementById('uploadLoader');
             
+            uploadButton.textContent = 'Uploading...';
+            uploadLoader.style.display = 'inline-block';
+
             try {
-                // Here you would normally upload to Firebase Storage and process with your backend
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                const uploadPromises = Array.from(files).map(file => uploadSingleResume(file));
+                const results = await Promise.all(uploadPromises);
                 
-                hideLoading();
-                showUploadSuccess('Resume uploaded and processed successfully!');
+                uploadButton.textContent = 'Upload & Process Resume';
+                uploadLoader.style.display = 'none';
+                
+                showUploadSuccess(`Successfully uploaded ${results.length} resume(s)!`);
                 
                 // Reset file input
                 fileInput.value = '';
                 document.getElementById('resumeUploadLabel').innerHTML = `
                     <span style="font-size: 2rem;">📄</span>
-                    <span>Click to upload your resume or drag and drop</span>
+                    <span>Click to upload your resume(s) or drag and drop</span>
+                    <small style="display: block; margin-top: 0.5rem; color: #94a3b8;">Supports PDF, DOC, DOCX, TXT files</small>
                 `;
+                
+                // Refresh resumes list
+                loadUserResumes();
+                
             } catch (error) {
-                hideLoading();
+                uploadButton.textContent = 'Upload & Process Resume';
+                uploadLoader.style.display = 'none';
                 showUploadError('Resume upload failed: ' + error.message);
             }
         }
 
-        // Job Search
+        async function uploadSingleResume(file) {
+            try {
+                // Create unique file name
+                const timestamp = Date.now();
+                const fileName = `${timestamp}_${file.name}`;
+                
+                // Upload to Firebase Storage
+                const storageRef = storage.ref().child(`resumes/${currentUser.uid}/${fileName}`);
+                const uploadTask = storageRef.put(file);
+                
+                // Wait for upload to complete
+                const snapshot = await uploadTask;
+                const downloadURL = await snapshot.ref.getDownloadURL();
+                
+                // Extract text from file (mock extraction for now)
+                const extractedText = await extractTextFromFile(file);
+                
+                // Create resume document
+                const resumeData = {
+                    id: db.collection('temp').doc().id,
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
+                    fileName: file.name,
+                    fileUrl: downloadURL,
+                    fileSize: file.size,
+                    uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    extractedText: extractedText,
+                    vectorStored: false,
+                    questions: []
+                };
+                
+                // Save to Firestore
+                await db.collection('users')
+                    .doc(currentUser.uid)
+                    .collection('resumes')
+                    .doc(resumeData.id)
+                    .set(resumeData);
+                
+                // Store in vector database (Qdrant)
+                try {
+                    const vectorId = await storeInVectorDB(extractedText, currentUser.email);
+                    
+                    // Update with vector ID
+                    await db.collection('users')
+                        .doc(currentUser.uid)
+                        .collection('resumes')
+                        .doc(resumeData.id)
+                        .update({
+                            vectorStored: true,
+                            vectorId: vectorId
+                        });
+                } catch (vectorError) {
+                    console.warn('Vector storage failed:', vectorError);
+                    // Continue without vector storage
+                }
+                
+                return resumeData;
+                
+            } catch (error) {
+                console.error('Single resume upload error:', error);
+                throw error;
+            }
+        }
+
+        // Mock text extraction function
+        async function extractTextFromFile(file) {
+            // For demo purposes, return mock text
+            // In production, you'd use libraries like pdf-parse, mammoth, etc.
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(`Extracted text from ${file.name}\n\nThis is mock extracted content. In a real implementation, this would contain the actual resume text extracted from the PDF/DOC file.`);
+                }, 1000);
+            });
+        }
+
+        // Vector database integration
+        async function storeInVectorDB(text, userEmail) {
+            try {
+                // Mock vector storage - replace with actual Qdrant API calls
+                const response = await fetch('/api/store-vector', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${await currentUser.getIdToken()}`
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        userEmail: userEmail,
+                        timestamp: Date.now()
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Vector storage failed');
+                }
+                
+                const result = await response.json();
+                return result.vectorId;
+                
+            } catch (error) {
+                console.error('Vector DB storage error:', error);
+                throw error;
+            }
+        }
+
+        // Load user's resumes
+        async function loadUserResumes() {
+            if (!currentUser) return;
+            
+            try {
+                const snapshot = await db.collection('users')
+                    .doc(currentUser.uid)
+                    .collection('resumes')
+                    .orderBy('uploadedAt', 'desc')
+                    .get();
+                
+                const resumes = [];
+                snapshot.forEach(doc => {
+                    resumes.push({ id: doc.id, ...doc.data() });
+                });
+                
+                displayResumes(resumes);
+                
+            } catch (error) {
+                console.error('Load resumes error:', error);
+            }
+        }
+
+        function displayResumes(resumes) {
+            const resumesList = document.getElementById('resumesList');
+            const resumesContainer = document.getElementById('resumesContainer');
+            
+            if (resumes.length === 0) {
+                resumesList.style.display = 'none';
+                return;
+            }
+            
+            resumesList.style.display = 'block';
+            
+            let html = '';
+            resumes.forEach(resume => {
+                const uploadDate = resume.uploadedAt ? new Date(resume.uploadedAt.seconds * 1000).toLocaleDateString() : 'Unknown';
+                const fileSize = resume.fileSize ? (resume.fileSize / 1024 / 1024).toFixed(2) + ' MB' : 'Unknown';
+                
+                html += `
+                    <div class="search-result-item" style="margin-bottom: 1rem;">
+                        <h5 style="color: #64c8ff; margin-bottom: 0.5rem;">📄 ${resume.fileName}</h5>
+                        <p style="color: #94a3b8; margin-bottom: 0.5rem;">
+                            <strong>Uploaded:</strong> ${uploadDate} | 
+                            <strong>Size:</strong> ${fileSize} | 
+                            <strong>Vector Stored:</strong> ${resume.vectorStored ? '✅' : '❌'}
+                        </p>
+                        <p style="color: #e2e8f0; margin-bottom: 1rem; max-height: 100px; overflow-y: auto;">
+                            ${resume.extractedText.substring(0, 200)}...
+                        </p>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" onclick="viewResume('${resume.id}')" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                                View Full Text
+                            </button>
+                            <button class="btn btn-secondary" onclick="downloadResume('${resume.fileUrl}', '${resume.fileName}')" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                                Download
+                            </button>
+                            <button class="btn btn-primary" onclick="askAboutResume('${resume.id}')" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                                Ask Questions
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resumesContainer.innerHTML = html;
+        }
+
+        // View resume full text
+        function viewResume(resumeId) {
+            // You can implement a modal or expand the text area
+            alert('View resume functionality - to be implemented');
+        }
+
+        // Download resume
+        function downloadResume(fileUrl, fileName) {
+            const link = document.createElement('a');
+            link.href = fileUrl;
+            link.download = fileName;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Ask question about specific resume
+        function askAboutResume(resumeId) {
+            const questionInput = document.getElementById('questionInput');
+            questionInput.focus();
+            questionInput.setAttribute('data-resume-id', resumeId);
+            questionInput.placeholder = 'Ask something about this specific resume...';
+        }
+
+        // Questions functionality
+        async function askQuestion() {
+            if (!currentUser) {
+                showError('Please login first');
+                return;
+            }
+
+            const questionInput = document.getElementById('questionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                showError('Please enter a question');
+                return;
+            }
+
+            const resumeId = questionInput.getAttribute('data-resume-id');
+            
+            showLoading('Processing your question...');
+            
+            try {
+                // Get answer from AI (mock for now)
+                const answer = await getAIAnswer(question, currentUser.uid, resumeId);
+                
+                // Store question and answer
+                await storeQuestion(currentUser.uid, question, answer, resumeId);
+                
+                hideLoading();
+                showSuccess('Question answered successfully!');
+                
+                // Clear input
+                questionInput.value = '';
+                questionInput.removeAttribute('data-resume-id');
+                questionInput.placeholder = 'Ask something about your resume...';
+                
+                // Refresh questions history
+                loadQuestionsHistory();
+                
+            } catch (error) {
+                hideLoading();
+                showError('Failed to process question: ' + error.message);
+            }
+        }
+
+        // Get AI answer (mock function)
+        async function getAIAnswer(question, userId, resumeId) {
+            // Mock AI response - in production, this would call your AI service
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const responses = [
+                        "Based on your resume, you have strong experience in software development with a focus on web technologies.",
+                        "Your resume shows expertise in JavaScript, React, and Node.js with 3+ years of experience.",
+                        "According to your resume, you have worked at several tech companies and have experience with agile methodologies.",
+                        "Your resume indicates strong problem-solving skills and experience with database design and API development."
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    resolve(randomResponse);
+                }, 2000);
+            });
+        }
+
+        // Store question and answer
+        async function storeQuestion(userId, question, answer, resumeId = null) {
+            try {
+                const questionData = {
+                    id: db.collection('temp').doc().id,
+                    question: question,
+                    answer: answer,
+                    resumeId: resumeId,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Store in user's questions collection
+                await db.collection('users')
+                    .doc(userId)
+                    .collection('questions')
+                    .doc(questionData.id)
+                    .set(questionData);
+                
+                // If it's about a specific resume, also add to that resume's questions
+                if (resumeId) {
+                    await db.collection('users')
+                        .doc(userId)
+                        .collection('resumes')
+                        .doc(resumeId)
+                        .update({
+                            questions: firebase.firestore.FieldValue.arrayUnion(questionData)
+                        });
+                }
+                
+                // Store in vector database for future AI learning
+                try {
+                    await storeQuestionInVectorDB(question, answer, userId);
+                } catch (vectorError) {
+                    console.warn('Vector storage for question failed:', vectorError);
+                }
+                
+                return questionData;
+                
+            } catch (error) {
+                console.error('Question storage error:', error);
+                throw error;
+            }
+        }
+
+        // Store question in vector database
+        async function storeQuestionInVectorDB(question, answer, userId) {
+            try {
+                const response = await fetch('/api/store-question-vector', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${await currentUser.getIdToken()}`
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        answer: answer,
+                        userId: userId,
+                        timestamp: Date.now()
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Question vector storage failed');
+                }
+                
+                return await response.json();
+                
+            } catch (error) {
+                console.error('Question vector storage error:', error);
+                throw error;
+            }
+        }
+
+        // Load questions history
+        async function loadQuestionsHistory() {
+            if (!currentUser) return;
+            
+            try {
+                const snapshot = await db.collection('users')
+                    .doc(currentUser.uid)
+                    .collection('questions')
+                    .orderBy('timestamp', 'desc')
+                    .limit(10)
+                    .get();
+                
+                const questions = [];
+                snapshot.forEach(doc => {
+                    questions.push({ id: doc.id, ...doc.data() });
+                });
+                
+                displayQuestions(questions);
+                
+            } catch (error) {
+                console.error('Load questions error:', error);
+            }
+        }
+
+        function displayQuestions(questions) {
+            const questionsHistory = document.getElementById('questionsHistory');
+            const questionsContainer = document.getElementById('questionsContainer');
+            
+            if (questions.length === 0) {
+                questionsHistory.style.display = 'none';
+                return;
+            }
+            
+            questionsHistory.style.display = 'block';
+            
+            let html = '';
+            questions.forEach(question => {
+                const timestamp = question.timestamp ? new Date(question.timestamp.seconds * 1000).toLocaleString() : 'Unknown';
+                
+                html += `
+                    <div class="search-result-item" style="margin-bottom: 1rem;">
+                        <h5 style="color: #64c8ff; margin-bottom: 0.5rem;">❓ ${question.question}</h5>
+                        <p style="color: #94a3b8; margin-bottom: 0.5rem;">
+                            <strong>Asked:</strong> ${timestamp}
+                            ${question.resumeId ? ' | <strong>About specific resume</strong>' : ''}
+                        </p>
+                        <div style="background: rgba(255, 255, 255, 0.03); padding: 1rem; border-radius: 8px; border-left: 3px solid #64c8ff;">
+                            <p style="color: #e2e8f0;">${question.answer}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            questionsContainer.innerHTML = html;
+        }
+
+        // Enhanced Job Search with user's resume context
         async function searchJobs() {
             if (!currentUser) {
                 showError('Please login first');
@@ -1539,56 +2076,90 @@
                 return;
             }
 
-            showLoading('Searching for jobs...');
+            showLoading('Searching for jobs based on your profile...');
             
             try {
-                // Simulate job search API call
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Get user's resume context for better matching
+                const userResumes = await getUserResumes();
+                const resumeContext = userResumes.map(r => r.extractedText).join('\n\n');
+                
+                // Enhanced job search with context
+                const jobs = await searchJobsWithContext(query, resumeContext);
                 
                 hideLoading();
+                displaySearchResults(jobs);
                 
-                // Mock job results
-                const mockJobs = [
-                    {
-                        title: "Senior Software Engineer",
-                        company: "Tech Corp",
-                        location: "San Francisco, CA",
-                        salary: "$120,000 - $180,000",
-                        description: "Looking for an experienced software engineer to join our team..."
-                    },
-                    {
-                        title: "Product Manager",
-                        company: "StartupXYZ",
-                        location: "Remote",
-                        salary: "$90,000 - $130,000",
-                        description: "Seeking a product manager to lead our product development..."
-                    },
-                    {
-                        title: "Data Scientist",
-                        company: "Analytics Inc",
-                        location: "New York, NY",
-                        salary: "$100,000 - $150,000",
-                        description: "Join our data science team to build predictive models..."
-                    }
-                ];
-                
-                displaySearchResults(mockJobs);
             } catch (error) {
                 hideLoading();
                 showError('Job search failed: ' + error.message);
             }
         }
 
+        async function getUserResumes() {
+            const snapshot = await db.collection('users')
+                .doc(currentUser.uid)
+                .collection('resumes')
+                .get();
+            
+            const resumes = [];
+            snapshot.forEach(doc => {
+                resumes.push({ id: doc.id, ...doc.data() });
+            });
+            
+            return resumes;
+        }
+
+        async function searchJobsWithContext(query, resumeContext) {
+            // Mock enhanced job search - in production, this would use your AI service
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const mockJobs = [
+                        {
+                            title: "Senior Software Engineer",
+                            company: "Tech Corp",
+                            location: "San Francisco, CA",
+                            salary: "$120,000 - $180,000",
+                            matchScore: "95%",
+                            description: "Looking for an experienced software engineer to join our team. This role matches your JavaScript and React experience perfectly."
+                        },
+                        {
+                            title: "Product Manager",
+                            company: "StartupXYZ",
+                            location: "Remote",
+                            salary: "$90,000 - $130,000",
+                            matchScore: "78%",
+                            description: "Seeking a product manager to lead our product development. Your technical background gives you an advantage."
+                        },
+                        {
+                            title: "Full Stack Developer",
+                            company: "Innovation Labs",
+                            location: "New York, NY",
+                            salary: "$100,000 - $140,000",
+                            matchScore: "88%",
+                            description: "Join our full-stack team. Your experience with both frontend and backend technologies is exactly what we need."
+                        }
+                    ];
+                    resolve(mockJobs);
+                }, 2000);
+            });
+        }
+
+        // Enhanced display with match scores
         function displaySearchResults(jobs) {
             const resultsContainer = document.getElementById('searchResults');
             resultsContainer.style.display = 'block';
             
-            let html = '<h4 style="color: #64c8ff; margin-bottom: 1rem;">Search Results:</h4>';
+            let html = '<h4 style="color: #64c8ff; margin-bottom: 1rem;">🎯 Personalized Job Matches:</h4>';
             
             jobs.forEach((job, index) => {
                 html += `
                     <div class="search-result-item">
-                        <h5 style="color: #64c8ff; margin-bottom: 0.5rem;">${job.title}</h5>
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <h5 style="color: #64c8ff; margin: 0;">${job.title}</h5>
+                            <span style="background: linear-gradient(135deg, #64c8ff 0%, #a78bfa 100%); color: white; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.8rem; font-weight: bold;">
+                                ${job.matchScore} Match
+                            </span>
+                        </div>
                         <p style="color: #94a3b8; margin-bottom: 0.5rem;"><strong>${job.company}</strong> - ${job.location}</p>
                         <p style="color: #a78bfa; margin-bottom: 0.5rem;">${job.salary}</p>
                         <p style="color: #e2e8f0; margin-bottom: 1rem;">${job.description}</p>
@@ -1601,6 +2172,24 @@
             
             resultsContainer.innerHTML = html;
         }
+
+        // Load user data when dashboard is shown
+        function showUserDashboard() {
+            document.getElementById('heroSection').style.display = 'none';
+            document.getElementById('userDashboard').classList.add('active');
+            document.querySelector('.features').style.display = 'none';
+            
+            // Load user's resumes and questions
+            loadUserResumes();
+            loadQuestionsHistory();
+        }
+
+        // Enhanced question input with Enter key support
+        document.getElementById('questionInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                askQuestion();
+            }
+        });
 
         function applyToJob(jobIndex) {
             if (!currentUser) {
